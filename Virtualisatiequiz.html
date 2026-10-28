@@ -1,0 +1,220 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Virtualisatiequiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: één projectiescherm — vraag bovenaan, vier antwoorden A–D in een 2×2-raster, uitleg na "Toon antwoord". Huisstijl van de les-slides. */
+:root {
+  --bg: #F6F5F0; --surface: #FFFFFE; --ink: #14213D; --muted: #4A5470; --line: #E1DFD6;
+  --a: #2B5FAD; --b: #B85A16; --c: #1F6F64; --d: #6B3FA0;
+  --good: #2E7D4F; --good-soft: #DFF1E6; --soft: #E4ECF7; --on-accent: #FFFFFE;
+  --display: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif;
+  --body: 'IBM Plex Sans', Arial, sans-serif;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0F1830; --surface: #17223F; --ink: #EEF1F7; --muted: #A9B4CC; --line: #2A3656;
+  --a: #7FA8EC; --b: #F0A060; --c: #6CC9B8; --d: #C3A2EE;
+  --good: #6FCF97; --good-soft: #17352A; --soft: #1D2D52; --on-accent: #0F1830; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0F1830; --surface: #17223F; --ink: #EEF1F7; --muted: #A9B4CC; --line: #2A3656;
+  --a: #7FA8EC; --b: #F0A060; --c: #6CC9B8; --d: #C3A2EE;
+  --good: #6FCF97; --good-soft: #17352A; --soft: #1D2D52; --on-accent: #0F1830; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; }
+.app { min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;
+  max-width: 1240px; margin: 0 auto; padding-block: 20px 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--a); outline-offset: 3px; }
+.eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--b); }
+
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.bar h1 { font-size: 1.3rem; }
+.count { font-family: var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.progress > div { height: 100%; background: var(--a); transition: width .3s; }
+
+.stage { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
+.topic { font-weight: 600; color: var(--b); font-size: 1.05rem; }
+.question { font-family: var(--display); font-weight: 600; font-size: clamp(1.6rem, 3.8vw, 3rem); line-height: 1.15; text-wrap: balance; }
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ans { display: flex; align-items: center; gap: 18px; padding: 18px 22px; border-radius: 14px; background: var(--surface); border: 2px solid var(--line); min-width: 0; transition: opacity .25s, border-color .25s, background .25s; }
+.ans .letter { flex: none; width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 1.6rem; color: var(--on-accent); }
+.ans .txt { font-size: clamp(1.1rem, 2vw, 1.55rem); line-height: 1.3; min-width: 0; overflow-wrap: anywhere; }
+.ans .txt.mono { font-family: var(--mono); }
+.revealed .ans { opacity: .35; }
+.revealed .ans.right { opacity: 1; border-color: var(--good); background: var(--good-soft); }
+.ans .ok { margin-left: auto; flex: none; font-weight: 700; color: var(--good); font-size: 1.1rem; }
+
+.why { display: flex; gap: 16px; align-items: flex-start; padding: 18px 22px; border-radius: 14px; background: var(--soft); font-size: 1.15rem; line-height: 1.5; }
+.why b { font-family: var(--display); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.controls .right { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn { padding: 12px 22px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 600; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--b); border-color: var(--b); color: var(--on-accent); font-family: var(--display); font-weight: 700; font-size: 1.15rem; }
+.keys { color: var(--muted); font-size: 0.9rem; }
+.keys kbd { font-family: var(--mono); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; background: var(--surface); }
+
+.panel { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 26px; max-width: 820px; }
+.panel h2 { font-size: clamp(2.2rem, 6vw, 4.2rem); line-height: 1.05; }
+.panel .lead { font-size: 1.2rem; line-height: 1.5; color: var(--muted); max-width: 62ch; }
+.opt { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.opt input { width: 20px; height: 20px; accent-color: var(--a); }
+.topics { display: flex; flex-wrap: wrap; gap: 8px; }
+.topics span { padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-weight: 600; font-size: 0.95rem; }
+
+@media (max-width: 680px) { .answers { grid-template-columns: 1fr; } .ans .letter { width: 40px; height: 40px; font-size: 1.2rem; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app" id="app"></div>
+
+<script>
+const COLORS = ["var(--a)", "var(--b)", "var(--c)", "var(--d)"];
+const Q = [
+  { topic: "Begrippen", q: "Wat doet virtualisatie?",
+    o: ["Meerdere besturingssystemen tegelijk laten draaien op één computer", "Je pc sneller maken door extra RAM te plaatsen", "Bestanden automatisch opslaan in de cloud", "Je netwerk beveiligen met een firewall"], a: 0,
+    w: "Virtualisatie bootst hardware na in software. Zo draaien meerdere virtuele machines (VM’s) op één echte computer." },
+  { topic: "Begrippen", q: "Hoe heet de software die de hardware verdeelt over de virtuele machines?",
+    o: ["De host", "De hypervisor", "De gateway", "Het BIOS"], a: 1,
+    w: "De hypervisor verdeelt CPU, RAM, schijf en netwerk over de VM’s. De host is de echte pc." },
+  { topic: "Begrippen", q: "Wat is de ‘host’?",
+    o: ["De virtuele machine zelf", "De echte, fysieke computer waarop de VM’s draaien", "Een server van VMware op het internet", "Het ISO-bestand van Windows"], a: 1,
+    w: "Host = de echte pc. Gast = de virtuele machine die erop draait." },
+  { topic: "Type 1 en type 2", q: "Wat is het verschil tussen een type 1- en een type 2-hypervisor?",
+    o: ["Type 1 is gratis, type 2 is betalend", "Type 1 draait rechtstreeks op de hardware, type 2 draait als programma op Windows, Linux of macOS", "Type 1 is voor Linux, type 2 is voor Windows", "Type 1 is een oudere versie van type 2"], a: 1,
+    w: "Type 1 (bare-metal) ís het besturingssysteem. Type 2 (hosted) heeft een host-OS onder zich." },
+  { topic: "Type 1 en type 2", q: "VMware Workstation, dat we vandaag gebruiken, is een…",
+    o: ["type 1-hypervisor", "type 2-hypervisor", "besturingssysteem", "netwerkkaart"], a: 1,
+    w: "Je installeert Workstation als programma op je Windows. Dat maakt het type 2." },
+  { topic: "Voorwaarde", q: "Waar zie je in Windows of virtualisatie aanstaat?",
+    o: ["Taakbeheer › Prestaties › CPU", "Configuratiescherm › Geluid", "Verkenner › Deze pc", "Instellingen › Bluetooth"], a: 0,
+    w: "Rechtsonder in Taakbeheer › Prestaties › CPU staat ‘Virtualisatie: Ingeschakeld’." },
+  { topic: "De virtuele machine", q: "Hoe ziet de host een virtuele machine?",
+    o: ["Als een map met bestanden", "Als een tweede beeldscherm", "Als een USB-stick", "Hij ziet ze helemaal niet"], a: 0,
+    w: "Een VM is voor de host een map met bestanden. Daarom is een VM kopiëren of verhuizen zo makkelijk." },
+  { topic: "De virtuele machine", q: "Wat zit er in het .vmdk-bestand van een VMware-VM?",
+    o: ["De instellingen van de VM", "Het logboek", "De virtuele harde schijf", "De lijst met snapshots"], a: 2,
+    w: ".vmdk = de virtuele harde schijf. De instellingen zitten in het .vmx-bestand." },
+  { topic: "De virtuele machine", q: "Waarvoor dient een snapshot?",
+    o: ["Een schermafbeelding maken", "Later teruggaan naar een eerdere toestand van de VM", "De VM sneller laten werken", "De VM met het internet verbinden"], a: 1,
+    w: "Neem een snapshot na de Windows-installatie. Gaat er iets mis, dan spring je terug." },
+  { topic: "Netwerk", q: "Wat gebeurt er in de netwerkmodus NAT?",
+    o: ["De VM krijgt een IP-adres van de echte router in de klas", "De VM zit in een privénetwerk achter je pc en gaat via het IP van je pc naar buiten", "De VM heeft geen internet", "De VM kan niet met andere VM’s praten"], a: 1,
+    w: "NAT werkt zoals je router thuis: de VM’s zitten in een eigen netwerk (VMnet8) en delen het IP van de host." },
+  { topic: "Netwerk", q: "Welke netwerkmodus geeft géén internet, alleen verbinding tussen je pc en je VM’s?",
+    o: ["Bridged", "NAT", "Host-only", "DHCP"], a: 2,
+    w: "Host-only (VMnet1) is een afgesloten netwerk. Bridged zet de VM op het echte netwerk. DHCP is geen netwerkmodus." },
+  { topic: "Netwerk", q: "Je VMnet8-netwerk is 192.168.119.0. Welke standaardgateway vul je in op je VM?",
+    o: ["192.168.119.1", "192.168.119.2", "192.168.119.10", "192.168.119.254"], a: 1, mono: true,
+    w: "In VMware-NAT is .2 de gateway (en ook de DNS). Een veelgemaakte fout is .1 invullen." },
+  { topic: "Netwerk", q: "Wie of wat zit er op 192.168.119.1 in dat netwerk?",
+    o: ["De gateway", "De DNS-server van Google", "Je eigen pc (de host)", "Computer1"], a: 2,
+    w: ".1 is de virtuele netwerkkaart van je eigen pc: ‘VMware Network Adapter VMnet8’." },
+  { topic: "Testen", q: "Computer2 pingt naar Computer1 en krijgt ‘Time-out’. Wat is de meest waarschijnlijke oorzaak?",
+    o: ["VT-x staat uit op de host", "Computer1 staat op netwerkprofiel ‘Openbaar’, dus de firewall blokkeert ping", "De DNS-server is verkeerd ingesteld", "De virtuele harde schijf is te klein"], a: 1,
+    w: "De ontvanger beslist. Zet Computer1 op ‘Privé’ en de ping lukt. (Een DNS-fout speelt geen rol: je pingt een IP-adres.)" },
+  { topic: "Testen", q: "Met welk commando zie je langs welke routers je pakketten naar www.sporza.be gaan?",
+    o: ["ping", "nslookup", "tracert", "netstat"], a: 2, mono: true,
+    w: "tracert toont elke tussenstap (hop). ping test alleen of het eindpunt antwoordt." }
+];
+
+let S;
+function fresh() { return { screen: "start", shuffle: false, order: Q.map((_, k) => k), i: 0, shown: false }; }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const app = document.getElementById("app");
+
+function render() { S.screen === "start" ? renderStart() : S.screen === "end" ? renderEnd() : renderQ(); }
+
+function renderStart() {
+  const topics = [...new Set(Q.map(q => q.topic))];
+  app.innerHTML = `
+  <div class="bar"><h1>Virtualisatiequiz</h1><span class="eyebrow">Les 7 · Virtualisatie</span></div>
+  <div class="panel">
+    <h2>Klassikale quiz over virtualisatie</h2>
+    <p class="lead">${Q.length} meerkeuzevragen. Lees de vraag voor, laat de klas kiezen (hand op, of A/B/C/D op een blad) en toon daarna het juiste antwoord met uitleg.</p>
+    <div class="topics">${topics.map(t => `<span>${esc(t)}</span>`).join("")}</div>
+    <label class="opt" for="sh"><input type="checkbox" id="sh" ${S.shuffle ? "checked" : ""}> Vragen in willekeurige volgorde</label>
+    <button class="btn primary" id="go" style="align-self:flex-start">Start de quiz</button>
+  </div>`;
+  document.getElementById("sh").onchange = e => S.shuffle = e.target.checked;
+  const g = document.getElementById("go"); g.focus();
+  g.onclick = () => { S.order = S.shuffle ? shuffle(Q.map((_, k) => k)) : Q.map((_, k) => k); S.i = 0; S.shown = false; S.screen = "q"; render(); };
+}
+
+function renderQ() {
+  const q = Q[S.order[S.i]], n = S.order.length;
+  app.innerHTML = `
+  <div class="bar"><h1>Virtualisatiequiz</h1><span class="count">Vraag ${S.i + 1} / ${n}</span></div>
+  <div class="progress" aria-hidden="true"><div style="width:${(S.i + 1) / n * 100}%"></div></div>
+  <div class="stage">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <p class="topic">${esc(q.topic)}</p>
+      <p class="question">${esc(q.q)}</p>
+    </div>
+    <div class="answers ${S.shown ? "revealed" : ""}">
+      ${q.o.map((t, k) => `<div class="ans ${k === q.a ? "right" : ""}">
+        <span class="letter" style="background:${COLORS[k]}">${"ABCD"[k]}</span>
+        <span class="txt ${q.mono ? "mono" : ""}">${esc(t)}</span>
+        ${S.shown && k === q.a ? `<span class="ok">✓ Juist</span>` : ""}</div>`).join("")}
+    </div>
+    ${S.shown ? `<div class="why" role="status"><p><b>Antwoord ${"ABCD"[q.a]}.</b> ${esc(q.w)}</p></div>` : ""}
+  </div>
+  <div class="controls">
+    <button class="btn" id="prev" ${S.i === 0 ? "disabled" : ""}>‹ Vorige</button>
+    <span class="keys"><kbd>Spatie</kbd> antwoord tonen · <kbd>←</kbd> <kbd>→</kbd> bladeren</span>
+    <div class="right">
+      ${S.shown ? `<button class="btn primary" id="next">${S.i + 1 < n ? "Volgende vraag ›" : "Einde quiz ›"}</button>`
+                : `<button class="btn primary" id="show">Toon antwoord</button>`}
+    </div>
+  </div>`;
+  document.getElementById("prev").onclick = prev;
+  const s = document.getElementById("show"), nx = document.getElementById("next");
+  if (s) { s.onclick = reveal; s.focus(); }
+  if (nx) { nx.onclick = next; nx.focus(); }
+}
+
+function renderEnd() {
+  app.innerHTML = `
+  <div class="bar"><h1>Virtualisatiequiz</h1><span class="eyebrow">Klaar</span></div>
+  <div class="panel">
+    <h2>Dat was de laatste vraag!</h2>
+    <p class="lead">Bespreek de vragen waar de klas twijfelde, en ga dan aan de slag met de leerlingenbundel.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn" id="back">‹ Terug naar laatste vraag</button>
+      <button class="btn primary" id="again">Opnieuw beginnen</button>
+    </div>
+  </div>`;
+  document.getElementById("back").onclick = () => { S.screen = "q"; S.i = S.order.length - 1; S.shown = true; render(); };
+  document.getElementById("again").onclick = () => { S.screen = "start"; render(); };
+}
+
+function reveal() { S.shown = true; render(); }
+function next() { if (S.i + 1 < S.order.length) { S.i++; S.shown = false; } else S.screen = "end"; render(); }
+function prev() { if (S.i > 0) { S.i--; S.shown = true; render(); } }
+
+document.addEventListener("keydown", e => {
+  if (S.screen !== "q" || e.target.tagName === "INPUT") return;
+  if (e.key === " " || e.key === "Enter") { e.preventDefault(); S.shown ? next() : reveal(); }
+  else if (e.key === "ArrowRight") { S.shown ? next() : reveal(); }
+  else if (e.key === "ArrowLeft") prev();
+});
+
+function boot(data) {
+  const saved = data && data.S;
+  S = Object.assign(fresh(), saved && Array.isArray(saved.order) && saved.order.length === Q.length ? saved : {});
+  if (!["start", "q", "end"].includes(S.screen)) S.screen = "start";
+  render();
+}
+window.claude?.hot?.snapshot?.(() => ({ S }));
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+</script>
+
+</body></html>
